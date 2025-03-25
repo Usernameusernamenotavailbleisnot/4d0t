@@ -340,10 +340,35 @@ async function processWallets() {
   }
 }
 
-// Display start time
-console.log(`🚀 Starting daily check-in process at ${new Date().toISOString()}`);
+// Function to run the process and schedule the next run
+async function runAndSchedule() {
+  try {
+    // Display start time
+    console.log(`\n🚀 Starting daily check-in process at ${new Date().toISOString()}`);
+    
+    // Process all wallets
+    await processWallets();
+    
+    // Display finish time
+    console.log(`🏁 Finished daily check-in process at ${new Date().toISOString()}`);
+    
+    // Calculate next run time (24.5 hours = 24 hours and 30 minutes from now)
+    const nextRunDelay = 24 * 60 * 60 * 1000 + 30 * 60 * 1000; // 24.5 hours in milliseconds
+    const nextRunTime = new Date(Date.now() + nextRunDelay);
+    
+    console.log(`\n⏰ Next run scheduled for: ${nextRunTime.toISOString()} (in 24.5 hours)`);
+    console.log(`💡 Keeping script running. Press Ctrl+C to exit.`);
+    
+    // Schedule next run
+    setTimeout(runAndSchedule, nextRunDelay);
+  } catch (error) {
+    console.error(`💥 Fatal error: ${error.message}`);
+    console.log(`⚠️ Scheduling next attempt in 1 hour due to error.`);
+    
+    // If there was an error, try again in 1 hour
+    setTimeout(runAndSchedule, 60 * 60 * 1000);
+  }
+}
 
-// Start processing
-processWallets()
-  .then(() => console.log(`🏁 Finished daily check-in process at ${new Date().toISOString()}`))
-  .catch(error => console.error(`💥 Fatal error: ${error.message}`));
+// Start the first run
+runAndSchedule();
